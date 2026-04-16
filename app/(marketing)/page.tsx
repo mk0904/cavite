@@ -1,7 +1,13 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Home() {
+  const { user, profile, loading } = useAuth();
+  const isAuthenticated = !!(user && profile);
+
   return (
     <>
       {/* top navigation */}
@@ -31,14 +37,20 @@ export default function Home() {
             </a>
           </div>
           <div className="flex gap-4 items-center pl-6">
-            <button className="hidden sm:block text-sm font-semibold text-on-surface/70 hover:text-brand-teal transition-all">
-              log in
-            </button>
-            <Link href="/sign-up">
-              <button className="px-6 py-2 text-sm font-bold bg-brand-teal text-white rounded-full hover:opacity-90 transition-all shadow-lg shadow-brand-teal/20">
-                sign up
-              </button>
-            </Link>
+            {!isAuthenticated ? (
+              <Link href="/sign-up">
+                <button className="px-6 py-2 text-sm font-bold bg-brand-teal text-white rounded-full hover:opacity-90 transition-all shadow-lg shadow-brand-teal/20">
+                  sign in
+                </button>
+              </Link>
+            ) : (
+              <Link href="/dashboard">
+                <button className="px-6 py-2 text-sm font-bold bg-brand-teal text-white rounded-full hover:opacity-90 transition-all shadow-lg shadow-brand-teal/20 flex items-center gap-2">
+                  <span>go to dashboard</span>
+                  <span className="material-symbols-outlined text-sm">dashboard</span>
+                </button>
+              </Link>
+            )}
           </div>
         </nav>
       </header>
@@ -63,10 +75,21 @@ export default function Home() {
                 bridge the gap between ambition and institutional excellence.
               </p>
               <div className="flex flex-wrap gap-6">
-                <button className="px-10 py-5 bg-brand-teal text-white rounded-full font-bold text-lg flex items-center gap-3 hover:opacity-90 transition-all shadow-2xl shadow-brand-teal/20 focus:outline-none focus:ring-1 focus:ring-brand-teal focus:ring-offset-1">
-                  build your blueprint{" "}
-                  <span className="material-symbols-outlined text-xl">arrow_forward</span>
-                </button>
+                {!isAuthenticated ? (
+                  <Link href="/sign-up">
+                    <button className="px-10 py-5 bg-brand-teal text-white rounded-full font-bold text-lg flex items-center gap-3 hover:opacity-90 transition-all shadow-2xl shadow-brand-teal/20 focus:outline-none focus:ring-1 focus:ring-brand-teal focus:ring-offset-1">
+                      enter portal{" "}
+                      <span className="material-symbols-outlined text-xl">arrow_forward</span>
+                    </button>
+                  </Link>
+                ) : (
+                  <Link href="/dashboard">
+                    <button className="px-10 py-5 bg-brand-teal text-white rounded-full font-bold text-lg flex items-center gap-3 hover:opacity-90 transition-all shadow-2xl shadow-brand-teal/20 focus:outline-none focus:ring-1 focus:ring-brand-teal focus:ring-offset-1">
+                      access nexus portal{" "}
+                      <span className="material-symbols-outlined text-xl">dashboard</span>
+                    </button>
+                  </Link>
+                )}
                 <button className="px-10 py-5 bg-white text-on-surface border border-outline-variant/30 rounded-full font-bold text-lg hover:bg-surface-container-low transition-all focus:outline-none focus:ring-1 focus:ring-brand-teal focus:ring-offset-1">
                   explore talent
                 </button>

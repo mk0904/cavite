@@ -12,6 +12,8 @@ export const metadata: Metadata = {
   description: "a placement ecosystem designed with structural integrity.",
 };
 
+import { AuthProvider } from "@/context/AuthContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -29,7 +31,9 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col font-body bg-surface text-on-surface selection:bg-primary-fixed selection:text-on-primary-fixed lowercase">
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
