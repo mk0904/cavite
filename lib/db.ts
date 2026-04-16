@@ -50,12 +50,20 @@ export interface Resume {
       phone: string;
       location: string;
       summary: string;
+      socials?: { platform: string; url: string }[];
     };
     experience: {
       id: string;
       company: string;
       role: string;
       dates: string;
+      bullets: string[];
+    }[];
+    projects: {
+      id: string;
+      title: string;
+      link?: string;
+      description: string;
       bullets: string[];
     }[];
     education: {
@@ -70,10 +78,26 @@ export interface Resume {
       category: string;
       items: string[];
     }[];
+    certificates: {
+      id: string;
+      name: string;
+      issuer: string;
+      date: string;
+      link?: string;
+    }[];
+    coCurricular: {
+      id: string;
+      role: string;
+      organization: string;
+      dates: string;
+      bullets: string[];
+    }[];
   };
   createdAt: any;
   updatedAt: any;
 }
+
+
 
 export interface Activity {
   id?: string;
@@ -94,21 +118,26 @@ export const createJob = async (jobData: Omit<Job, 'id' | 'createdAt' | 'status'
 };
 
 // Resume Logic
-export const createResume = async (userId: string, title: string) => {
+export const createResume = async (userId: string, title: string, initialSections?: Resume['sections']) => {
   const initialData: Omit<Resume, 'id'> = {
     userId,
     title,
-    sections: {
-      basics: { name: "", email: "", phone: "", location: "", summary: "" },
+    sections: initialSections || {
+      basics: { name: "", email: "", phone: "", location: "", summary: "", socials: [] },
       experience: [],
+      projects: [],
       education: [],
-      skills: []
+      skills: [],
+      certificates: [],
+      coCurricular: []
     },
+
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()
   };
   return await addDoc(collection(db, "resumes"), initialData);
 };
+
 
 export const updateResume = async (resumeId: string, data: Partial<Resume>) => {
   const docRef = doc(db, "resumes", resumeId);
