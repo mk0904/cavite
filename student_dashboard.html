@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cavite | Student Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;500;600;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "#d8dada",
+                        "on-surface": "#191c1d",
+                        "surface-container-high": "#e6e8e9",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#c6e9eb",
+                        "secondary": "#446466",
+                        "on-tertiary-container": "#fff0e9",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#96f1f6",
+                        "on-primary-fixed-variant": "#004f53",
+                        "on-secondary-container": "#4a6a6c",
+                        "on-primary-container": "#c8fcff",
+                        "surface": "#f8fafa",
+                        "primary": "#006064",
+                        "surface-container-low": "#f2f4f4",
+                        "surface-bright": "#f8fafa",
+                        "on-secondary": "#ffffff",
+                        "outline": "#6e797a",
+                        "surface-container-highest": "#e1e3e3",
+                        "on-secondary-fixed-variant": "#2c4c4e",
+                        "on-secondary-fixed": "#002021",
+                        "on-primary-fixed": "#002021",
+                        "tertiary-fixed": "#ffdbc9",
+                        "tertiary-container": "#a25d33",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#abcdcf",
+                        "on-background": "#191c1d",
+                        "inverse-primary": "#7ad5da",
+                        "on-tertiary-fixed": "#331200",
+                        "tertiary-fixed-dim": "#ffb68e",
+                        "secondary-container": "#c6e9eb",
+                        "inverse-surface": "#2e3131",
+                        "surface-tint": "#00696e",
+                        "primary-fixed-dim": "#7ad5da",
+                        "tertiary": "#84451d",
+                        "outline-variant": "#bdc9c9",
+                        "on-surface-variant": "#3e4949",
+                        "surface-container-lowest": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "background": "#f8fafa",
+                        "on-error-container": "#93000a",
+                        "primary-container": "#007b80",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#eff1f1",
+                        "surface-container": "#eceeee"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Manrope"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(0, 123, 128, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 123, 128, 0.05);
+        }
+        .neon-glow {
+            box-shadow: 0 0 15px rgba(0, 123, 128, 0.15);
+        }
+        body {
+            background: radial-gradient(circle at top left, #f8fafa, #eceeee);
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body class="font-body text-on-surface bg-surface selection:bg-primary-container selection:text-on-primary-container">
+<!-- Background Architectural Elements -->
+<div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+<div class="absolute -top-24 -right-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
+<div class="absolute top-1/2 -left-48 w-[600px] h-[600px] bg-secondary-container/10 rounded-full blur-[120px]"></div>
+</div>
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full z-50 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-b border-white/20 dark:border-slate-800/20 shadow-[0_8px_32px_0_rgba(0,123,128,0.1)]">
+<div class="flex justify-between items-center w-full px-6 py-4">
+<div class="flex items-center gap-4">
+<span class="text-2xl font-black tracking-tighter text-teal-700 dark:text-teal-400 font-headline">Cavite</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex items-center bg-surface-container-low px-4 py-2 rounded-full border border-outline-variant/20">
+<span class="material-symbols-outlined text-outline text-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm font-label ml-2 w-64" placeholder="Search opportunities..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-white/40 dark:hover:bg-slate-800/40 transition-all duration-300">
+<span class="material-symbols-outlined text-teal-600 dark:text-teal-400">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-white/40 dark:hover:bg-slate-800/40 transition-all duration-300">
+<span class="material-symbols-outlined text-teal-600 dark:text-teal-400">account_circle</span>
+</button>
+</div>
+</div>
+</div>
+</header>
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-0 h-full w-64 z-40 border-r border-white/20 dark:border-slate-800/20 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl shadow-2xl shadow-teal-900/5 flex flex-col pt-24 pb-6 px-4">
+<div class="mb-8 px-4">
+<h2 class="font-headline text-xl font-bold text-teal-700 dark:text-teal-400">Cavite Portal</h2>
+<p class="font-label text-xs text-slate-500 uppercase tracking-widest mt-1">Student Access</p>
+</div>
+<nav class="flex-1 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 bg-teal-500/10 text-teal-700 dark:text-teal-300 border-r-4 border-teal-500 font-medium" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-slate-600 dark:text-slate-400 hover:bg-white/20 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-label text-sm">Resumes</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-slate-600 dark:text-slate-400 hover:bg-white/20 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">work</span>
+<span class="font-label text-sm">Jobs</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-slate-600 dark:text-slate-400 hover:bg-white/20 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">assignment_turned_in</span>
+<span class="font-label text-sm">Applications</span>
+</a>
+</nav>
+<div class="mt-auto flex flex-col gap-1">
+<button class="mb-4 mx-2 py-3 px-4 bg-primary text-on-primary rounded-xl font-headline font-bold text-sm shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
+                New Application
+            </button>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-slate-600 dark:text-slate-400 hover:bg-white/20" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label text-sm">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-slate-600 dark:text-slate-400 hover:bg-white/20" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label text-sm">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 pt-24 min-h-screen px-8 pb-12 relative z-10">
+<!-- Header Section -->
+<div class="mb-10 flex justify-between items-end">
+<div>
+<h1 class="text-4xl font-black font-headline tracking-tight text-on-surface">Welcome back, Alex.</h1>
+<p class="text-on-surface-variant mt-2 font-label">Your career trajectory is looking strong this week.</p>
+</div>
+<div class="text-right">
+<p class="text-sm font-label text-outline uppercase tracking-widest">Oct 24, 2023</p>
+<p class="text-xl font-bold font-headline text-primary">Academic Year 2023-24</p>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Stats Row -->
+<div class="col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="glass-card neon-glow p-8 rounded-3xl group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-primary-container/20 rounded-2xl">
+<span class="material-symbols-outlined text-primary">send</span>
+</div>
+<span class="text-emerald-600 text-xs font-bold font-label flex items-center gap-1 bg-emerald-50 px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-xs">trending_up</span> +12%
+                        </span>
+</div>
+<p class="text-outline text-sm font-label uppercase tracking-widest">Applications</p>
+<h3 class="text-5xl font-black font-headline text-on-surface mt-2 tracking-tighter">24</h3>
+</div>
+<div class="glass-card neon-glow p-8 rounded-3xl group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-secondary-container/20 rounded-2xl">
+<span class="material-symbols-outlined text-secondary">star</span>
+</div>
+<span class="text-emerald-600 text-xs font-bold font-label flex items-center gap-1 bg-emerald-50 px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-xs">trending_up</span> +4%
+                        </span>
+</div>
+<p class="text-outline text-sm font-label uppercase tracking-widest">Shortlisted</p>
+<h3 class="text-5xl font-black font-headline text-on-surface mt-2 tracking-tighter">08</h3>
+</div>
+<div class="glass-card neon-glow p-8 rounded-3xl group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-tertiary-fixed/20 rounded-2xl">
+<span class="material-symbols-outlined text-tertiary">celebration</span>
+</div>
+<span class="text-slate-400 text-xs font-bold font-label flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-xs">horizontal_rule</span> 0%
+                        </span>
+</div>
+<p class="text-outline text-sm font-label uppercase tracking-widest">Offers</p>
+<h3 class="text-5xl font-black font-headline text-on-surface mt-2 tracking-tighter">02</h3>
+</div>
+</div>
+<!-- Recent Activity Feed (Bento Larger) -->
+<div class="col-span-12 lg:col-span-8 glass-card p-8 rounded-[2rem] neon-glow">
+<div class="flex justify-between items-center mb-8">
+<h3 class="text-2xl font-black font-headline">Recent Activity</h3>
+<button class="text-primary font-bold text-sm font-label flex items-center gap-1 hover:underline">
+                        View All <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<div class="space-y-6">
+<div class="flex items-center gap-6 p-4 rounded-2xl hover:bg-white/20 transition-all border-l-4 border-transparent hover:border-primary">
+<div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-surface-container-high">
+<img alt="Google" class="w-full h-full object-cover" data-alt="minimalist tech company logo clean geometric modern style on a white background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPWmwKBt_BTFjrnMu9lZ1lXJSwPhdZZbG_EVbgv2VyVvRfiZRbvlWx1fmi5ubAQwIKYZH6az5FmTnCtA5O8f_vf_HRjX-ewTB4hA2BBZuMQgVkJHeuh08WFx8uASjCuYX7A3rtcqa2FxfHtXXo2EYwtk1MxWY40oyP2s7DMR5FSFc8qy8Sk47nXLij8M4oJ0KG6PrgUrTy57x6qp6N69d584FlbhaNWi9wp7zF-Ben8mfkinwGWtt3YDO67-4dhwQz9VZ6_WWP9ew"/>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-on-surface">Resume viewed by Google</h4>
+<p class="text-sm text-on-surface-variant font-label">Software Engineering Internship 2024</p>
+</div>
+<span class="text-xs text-outline font-label">2 hours ago</span>
+</div>
+<div class="flex items-center gap-6 p-4 rounded-2xl hover:bg-white/20 transition-all border-l-4 border-transparent hover:border-primary">
+<div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-surface-container-high">
+<img alt="Amazon" class="w-full h-full object-cover" data-alt="minimalist tech company logo with bold font style on a clean white background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDHCikVsjlY88ruEu7kZ8CVL4O9iYu5FCr6Hc6MhugwML0kpWJLe_-HdP9oSsF5EPhHYSxrS5FCyOHH_EICbZspBCtx3SruY8zrWrog9XoTmaYBuRwA8h2LTaAdJPGg1qIKDz6UiaNcNW8M6dD2xzhAYTm-4yenkbB34adV2NP2kM1TX4qi-Xtm1OLAhPQb4ps78PFi29Syg8LbumvmXQWKSi-WReh7te8GV0pmRuY1OfESLKbwAsp_9uy-YF_NkXONDOWb-3LleU"/>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-on-surface">Applied to Amazon</h4>
+<p class="text-sm text-on-surface-variant font-label">Frontend Developer Role - Seattle</p>
+</div>
+<span class="text-xs text-outline font-label">Yesterday</span>
+</div>
+<div class="flex items-center gap-6 p-4 rounded-2xl hover:bg-white/20 transition-all border-l-4 border-transparent hover:border-primary">
+<div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-surface-container-high">
+<img alt="Netflix" class="w-full h-full object-cover" data-alt="minimalist red and white sleek logo on clear background for modern tech company" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHI79HsxGCH4tO47PYnGB5zA9k2Wh5ns3VpFzL92hRx6IblEbZSoZRRRP2fYSQp1rllv8Mk02zQchlueAY81U0LBV6tfKi9yNnXBFrGKoVwSNx5Q6caqMmP5pyEJbHZQKSHyCALoiO1baz4MGCdjg_IULfWb8N7yskIyV42YaOCicWjaE-S-ELq91mYYiATvgAwiqGljxUODxINXH6JiWwTBrG3SdqVxjuZkw_SIxXOKP6L7zHmqhfFUpUZWgrnuFcoI4a0nuwerI"/>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-on-surface">Interview Requested: Netflix</h4>
+<p class="text-sm text-on-surface-variant font-label">Final Round - Product Design</p>
+</div>
+<span class="text-xs text-outline font-label">3 days ago</span>
+</div>
+<div class="flex items-center gap-6 p-4 rounded-2xl hover:bg-white/20 transition-all border-l-4 border-transparent hover:border-primary">
+<div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-surface-container-high">
+<img alt="Microsoft" class="w-full h-full object-cover" data-alt="minimalist four-color window logo clean geometric modern style on white background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAG404SdorNeZCgmyv3t4KBvBNHYnvZ-CDJFf4isSb_r-tMhd0sjSnzzlMzdM8UTGvnM4UEHZL-G-hHUgTXWsCTGGxom36ZapSkcr3NCzMdqcKpvyg_i79zXI-Pybp2nWAeL1JTz0Tn8DFMGhfxabCHUh7cj8zxBXvTZxiaMfQ0VqzGL6cz0597cCmtxZMFapPFLpAFLYuzDwyrm2pfLrxlr2bdFvcgppIeIBqyEmlAsVm-tbfr4AmkHSflLMAol03gULN-cInoL6o"/>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-on-surface">Shortlisted for Microsoft</h4>
+<p class="text-sm text-on-surface-variant font-label">Explore Program Internship</p>
+</div>
+<span class="text-xs text-outline font-label">Oct 19</span>
+</div>
+</div>
+</div>
+<!-- Upcoming Deadlines (Bento Sidebar) -->
+<div class="col-span-12 lg:col-span-4 glass-card p-8 rounded-[2rem] neon-glow">
+<h3 class="text-2xl font-black font-headline mb-8">Upcoming Deadlines</h3>
+<div class="space-y-4">
+<div class="p-6 bg-white/30 rounded-3xl border border-white/40 shadow-sm">
+<div class="flex justify-between items-start mb-3">
+<span class="px-3 py-1 bg-tertiary-container/10 text-tertiary text-[10px] font-black font-headline uppercase tracking-widest rounded-full">High Priority</span>
+<span class="text-xs font-label text-outline">Oct 30</span>
+</div>
+<h5 class="font-black text-lg text-on-surface leading-tight">IBM Interview</h5>
+<p class="text-xs text-on-surface-variant font-label mt-1">Virtual Meeting • 10:00 AM EST</p>
+<div class="mt-4 flex -space-x-2">
+<img alt="Recruiter" class="w-8 h-8 rounded-full border-2 border-white" data-alt="close-up headshot of professional woman recruiter with friendly expression in office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCH9me9XzGkKxMCVaR9hxzcniE2DwNaw9We-rkxkqtvRREusGEkPaylWrrXUL6ioZZKWbzAeefmdFtcxDxg2KqufKmTn6AbegoJI3nRAMBvvsjIv1363QbHI_4HMp3MhMhmXUC0qHKGtqPTeid2hsQZotNuFkziN0Mu8BqZFvCZoCMsHyNyOdCH5BprKg2ejgCVb8VFenXeljI-4JG280mmwZAhI13ACziRBqX_HzME6BuPkO3aJQDphuye-ISxjaxUX7Ng0dQuMt0"/>
+<div class="w-8 h-8 rounded-full bg-primary/10 border-2 border-white flex items-center justify-center">
+<span class="text-[10px] font-bold text-primary">+2</span>
+</div>
+</div>
+</div>
+<div class="p-6 bg-white/30 rounded-3xl border border-white/40 shadow-sm">
+<div class="flex justify-between items-start mb-3">
+<span class="px-3 py-1 bg-primary-container/10 text-primary text-[10px] font-black font-headline uppercase tracking-widest rounded-full">Application</span>
+<span class="text-xs font-label text-outline">Nov 02</span>
+</div>
+<h5 class="font-black text-lg text-on-surface leading-tight">Spotify Design Chal.</h5>
+<p class="text-xs text-on-surface-variant font-label mt-1">Submission Deadline</p>
+</div>
+<div class="p-6 bg-white/30 rounded-3xl border border-white/40 shadow-sm">
+<div class="flex justify-between items-start mb-3">
+<span class="px-3 py-1 bg-secondary-container/10 text-secondary text-[10px] font-black font-headline uppercase tracking-widest rounded-full">Networking</span>
+<span class="text-xs font-label text-outline">Nov 05</span>
+</div>
+<h5 class="font-black text-lg text-on-surface leading-tight">Tech Career Fair</h5>
+<p class="text-xs text-on-surface-variant font-label mt-1">Grand Hall • All Day</p>
+</div>
+</div>
+<button class="w-full mt-6 py-4 rounded-2xl border-2 border-dashed border-primary/30 text-primary font-bold font-headline hover:bg-primary/5 transition-all text-sm">
+                    + Add New Deadline
+                </button>
+</div>
+<!-- Featured Resources (Horizontal Bento) -->
+<div class="col-span-12 glass-card p-10 rounded-[2rem] overflow-hidden relative">
+<div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
+<div class="max-w-lg">
+<h3 class="text-3xl font-black font-headline tracking-tighter leading-none mb-4">Master your technical interviews.</h3>
+<p class="text-on-surface-variant font-label text-lg">Access our curated database of interview questions from top silicon valley firms, verified by actual candidates.</p>
+<div class="mt-8 flex gap-4">
+<button class="px-8 py-3 bg-primary text-on-primary rounded-xl font-headline font-bold hover:scale-105 transition-transform">Get Started</button>
+<button class="px-8 py-3 border border-primary/30 text-primary rounded-xl font-headline font-bold hover:bg-primary/5">Browse Guides</button>
+</div>
+</div>
+<div class="flex-shrink-0 w-full md:w-[400px] h-[250px] rounded-3xl overflow-hidden shadow-2xl">
+<img alt="Study Space" class="w-full h-full object-cover" data-alt="modern minimalist interior with sleek wooden tables and large windows overlooking a city at dusk with soft teal lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhW4YojUpS_f5zTyIoDRubeIqZ0wS4THz1XEakyeQ52py6eddbDqed8AqsZSC37gwFG4Ivwx3FDTu-mOnBZa0TqMQQ0Sr1oVkW0eB22VYKnLPGg4OyEev1B9cm26Mv943yhXxYXKt5tzop8GmBnUZ_OKOzfbOdjWJfxkSbudINzwrWn60mAyGq5QW0YQ7jnCwlCc6GO1YQXrH804HX8Sc9_Ff7rJdy20fwlqDyBzgbnYOT4waaAX1tLSo6dH2-yWy1FV3_wXl3jdk"/>
+</div>
+</div>
+<!-- Abstract Accent -->
+<div class="absolute -bottom-24 -right-24 w-64 h-64 bg-primary/20 rounded-full blur-[80px]"></div>
+</div>
+</div>
+</main>
+<!-- Floating Action for Mobile/Quick Access -->
+<div class="fixed bottom-8 right-8 z-50">
+<button class="w-14 h-14 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-2xl" data-weight="fill">chat_bubble</span>
+</button>
+</div>
+</body></html>
