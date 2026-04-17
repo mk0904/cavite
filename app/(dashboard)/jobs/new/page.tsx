@@ -24,7 +24,7 @@ export default function NewJobPage() {
   if (profile?.role !== "admin") {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="glass-panel p-12 rounded-[3rem] text-center border border-white/40 shadow-2xl">
+        <div className="glass-panel rounded-[3rem] border border-white/40 p-12 text-center shadow-2xl dark:border-white/10">
           <h2 className="text-3xl font-black font-headline text-on-surface">access restricted.</h2>
           <p className="text-on-surface-variant mt-4 font-label uppercase tracking-widest text-xs">institutional authorization required.</p>
         </div>
@@ -55,7 +55,7 @@ export default function NewJobPage() {
   if (success) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="glass-panel p-16 rounded-[4rem] text-center border border-emerald-500/30 bg-emerald-50/10 shadow-2xl animate-in zoom-in-95">
+        <div className="glass-panel animate-in zoom-in-95 rounded-[4rem] border border-emerald-500/30 bg-emerald-50/10 p-16 text-center shadow-2xl dark:border-emerald-500/25 dark:bg-emerald-950/20">
           <span className="material-symbols-outlined text-7xl text-emerald-500 mb-6 animate-bounce">verified</span>
           <h2 className="text-4xl font-black font-headline text-on-surface">posting architectural.</h2>
           <p className="text-on-surface-variant mt-4 font-medium uppercase tracking-[0.2em] text-[10px]">job successfully synchronized to the cohort.</p>
@@ -74,7 +74,7 @@ export default function NewJobPage() {
         </h1>
       </div>
 
-      <div className="glass-panel p-12 rounded-[3rem] border border-white/40 shadow-[0_32px_64px_rgba(0,123,128,0.12)]">
+      <div className="glass-panel rounded-[3rem] border border-white/40 p-12 shadow-[0_32px_64px_rgba(0,123,128,0.12)] dark:border-white/10">
         <form onSubmit={handleSubmit} className="space-y-10 font-body">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             {/* basic info */}
@@ -82,7 +82,7 @@ export default function NewJobPage() {
               <label className="text-[10px] font-black tracking-widest uppercase text-on-surface-variant/60 ml-4">role title</label>
               <input 
                 required
-                className="w-full bg-white/40 border border-outline-variant/30 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-brand-teal focus:border-transparent transition-all outline-none font-medium"
+                className="w-full rounded-2xl border border-outline-variant/30 bg-white/55 px-6 py-4 font-medium text-on-surface outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-brand-teal dark:border-white/12 dark:bg-white/[0.06] dark:placeholder:text-on-surface-variant/45 dark:focus:bg-white/[0.09]"
                 placeholder="e.g. senior software engineer"
                 value={formData.title}
                 onChange={e => setFormData({...formData, title: e.target.value})}
@@ -92,7 +92,7 @@ export default function NewJobPage() {
               <label className="text-[10px] font-black tracking-widest uppercase text-on-surface-variant/60 ml-4">company entity</label>
               <input 
                 required
-                className="w-full bg-white/40 border border-outline-variant/30 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-brand-teal focus:border-transparent transition-all outline-none font-medium"
+                className="w-full rounded-2xl border border-outline-variant/30 bg-white/55 px-6 py-4 font-medium text-on-surface outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-brand-teal dark:border-white/12 dark:bg-white/[0.06] dark:placeholder:text-on-surface-variant/45 dark:focus:bg-white/[0.09]"
                 placeholder="e.g. google / rishihood"
                 value={formData.company}
                 onChange={e => setFormData({...formData, company: e.target.value})}
@@ -103,7 +103,7 @@ export default function NewJobPage() {
               <label className="text-[10px] font-black tracking-widest uppercase text-on-surface-variant/60 ml-4">geographical nexus</label>
               <input 
                 required
-                className="w-full bg-white/40 border border-outline-variant/30 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-brand-teal focus:border-transparent transition-all outline-none font-medium"
+                className="w-full rounded-2xl border border-outline-variant/30 bg-white/55 px-6 py-4 font-medium text-on-surface outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-brand-teal dark:border-white/12 dark:bg-white/[0.06] dark:placeholder:text-on-surface-variant/45 dark:focus:bg-white/[0.09]"
                 placeholder="e.g. gurgaon, remote"
                 value={formData.location}
                 onChange={e => setFormData({...formData, location: e.target.value})}
@@ -113,7 +113,7 @@ export default function NewJobPage() {
               <label className="text-[10px] font-black tracking-widest uppercase text-on-surface-variant/60 ml-4">remuneration guide</label>
               <input 
                 required
-                className="w-full bg-white/40 border border-outline-variant/30 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-brand-teal focus:border-transparent transition-all outline-none font-medium"
+                className="w-full rounded-2xl border border-outline-variant/30 bg-white/55 px-6 py-4 font-medium text-on-surface outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-brand-teal dark:border-white/12 dark:bg-white/[0.06] dark:placeholder:text-on-surface-variant/45 dark:focus:bg-white/[0.09]"
                 placeholder="e.g. 12-18 LPA"
                 value={formData.salary}
                 onChange={e => setFormData({...formData, salary: e.target.value})}
@@ -123,7 +123,7 @@ export default function NewJobPage() {
             <div className="space-y-1">
               <label className="text-[10px] font-black tracking-widest uppercase text-on-surface-variant/60 ml-4">employment structural</label>
               <select 
-                className="w-full bg-white/40 border border-outline-variant/30 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-brand-teal focus:border-transparent transition-all outline-none font-medium appearance-none"
+                className="w-full appearance-none rounded-2xl border border-outline-variant/30 bg-white/55 px-6 py-4 font-medium text-on-surface outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-brand-teal dark:border-white/12 dark:bg-white/[0.06] dark:focus:bg-white/[0.09]"
                 value={formData.type}
                 onChange={e => setFormData({...formData, type: e.target.value})}
               >
@@ -138,7 +138,7 @@ export default function NewJobPage() {
               <input 
                 required
                 type="date"
-                className="w-full bg-white/40 border border-outline-variant/30 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-brand-teal focus:border-transparent transition-all outline-none font-medium"
+                className="w-full rounded-2xl border border-outline-variant/30 bg-white/55 px-6 py-4 font-medium text-on-surface outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-brand-teal dark:border-white/12 dark:bg-white/[0.06] dark:placeholder:text-on-surface-variant/45 dark:focus:bg-white/[0.09]"
                 value={formData.deadline}
                 onChange={e => setFormData({...formData, deadline: e.target.value})}
               />
@@ -150,14 +150,14 @@ export default function NewJobPage() {
             <textarea 
               required
               rows={6}
-              className="w-full bg-white/40 border border-outline-variant/30 rounded-3xl px-6 py-6 focus:ring-2 focus:ring-brand-teal focus:border-transparent transition-all outline-none font-medium resize-none shadow-inner"
+              className="w-full resize-none rounded-3xl border border-outline-variant/30 bg-white/55 px-6 py-6 font-medium text-on-surface shadow-inner outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-brand-teal dark:border-white/12 dark:bg-white/[0.06] dark:focus:bg-white/[0.09]"
               placeholder="describe the structural responsibilities and precision requirements..."
               value={formData.description}
               onChange={e => setFormData({...formData, description: e.target.value})}
             />
           </div>
 
-          <div className="flex items-center justify-between pt-6 border-t border-outline-variant/20">
+          <div className="flex items-center justify-between border-t border-outline-variant/20 pt-6 dark:border-white/[0.08]">
             <button 
               type="button" 
               onClick={() => router.back()}

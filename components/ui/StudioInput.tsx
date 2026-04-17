@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React from "react";
 
 interface StudioInputProps {
   label: string;
@@ -19,24 +19,26 @@ export const StudioInput: React.FC<StudioInputProps> = ({
   placeholder,
   type = "text",
   className = "",
-  isTextArea = false
+  isTextArea = false,
 }) => {
-  const Component = isTextArea ? 'textarea' : 'input';
+  const Component = isTextArea ? "textarea" : "input";
 
   return (
-    <div className={`relative group ${className}`}>
-      {/* Label sitting on the border */}
-      <label className="absolute -top-2 left-4 px-2 text-[9px] font-black tracking-[0.2em] uppercase text-brand-teal bg-white/90 backdrop-blur-sm rounded-full z-10 transition-all group-focus-within:text-brand-teal group-focus-within:scale-105 origin-left pointer-events-none opacity-60 group-focus-within:opacity-100">
+    <div className={`space-y-2 ${className}`}>
+      <label className="block text-[9px] font-black uppercase leading-snug tracking-[0.12em] text-brand-teal dark:text-[#7ee8ec]">
         {label}
       </label>
-      
       <Component
         type={type}
         value={value}
-        onChange={(e: any) => onChange(e.target.value)}
-        placeholder={placeholder || `Enter ${label}...`}
+        onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+          onChange(e.target.value)
+        }
+        placeholder={placeholder || `Enter ${label.toLowerCase()}…`}
         rows={isTextArea ? 4 : undefined}
-        className={`w-full bg-white/40 border border-outline-variant/30 rounded-xl px-5 ${isTextArea ? 'py-4' : 'h-12'} text-sm font-semibold text-on-surface placeholder:text-on-surface-variant/20 focus:ring-4 focus:ring-brand-teal/5 focus:border-brand-teal focus:bg-white/80 transition-all outline-none resize-none`}
+        className={`w-full resize-none rounded-xl border border-outline-variant/30 bg-white/70 px-4 text-sm font-semibold text-zinc-900 outline-none transition-all placeholder:text-zinc-500 focus:border-brand-teal focus:bg-white focus:text-zinc-900 focus:ring-2 focus:ring-brand-teal/15 dark:border-zinc-500/50 dark:bg-zinc-900/90 dark:text-zinc-100 dark:placeholder:text-zinc-400 dark:focus:border-[#5ec4c9] dark:focus:bg-zinc-950 dark:focus:text-zinc-100 dark:focus:ring-[#5ec4c9]/25 dark:focus:placeholder:text-zinc-500 ${
+          isTextArea ? "min-h-[6rem] py-3" : "h-11 py-2"
+        }`}
       />
     </div>
   );

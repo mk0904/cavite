@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
   --color-surface-dim: #d8dada;
   --color-secondary-container: #c6e9eb;
@@ -64,16 +66,39 @@
   .dark, [data-theme="dark"] {
     --color-background: #050708 !important;
     --color-surface: #050708 !important;
-    --color-on-surface: #ffffff !important;
-    --color-on-background: #ffffff !important;
+    --color-on-surface: #f4f7f7 !important;
+    --color-on-background: #f4f7f7 !important;
+    /* Light-theme tokens are dark grays; without overrides, muted text stays illegible on dark UI */
+    --color-on-surface-variant: #a8b5b5 !important;
     --color-surface-container-low: #0f1112 !important;
-    --color-outline-variant: rgba(255, 255, 255, 0.1) !important;
+    --color-surface-container-lowest: #0c0f10 !important;
+    --color-surface-variant: #1a2224 !important;
+    --color-outline: rgba(255, 255, 255, 0.22) !important;
+    --color-outline-variant: rgba(255, 255, 255, 0.14) !important;
   }
   
   /* ensure the class itself applies the background if used on a wrapper */
   .dark {
     background-color: var(--color-background);
     color: var(--color-on-surface);
+  }
+
+  /* Chrome autofill: avoid white flash + illegible light text in dark UI */
+  .dark input:-webkit-autofill,
+  .dark input:-webkit-autofill:focus,
+  .dark input:-webkit-autofill:hover,
+  .dark textarea:-webkit-autofill,
+  .dark textarea:-webkit-autofill:focus,
+  .dark textarea:-webkit-autofill:hover,
+  [data-theme="dark"] input:-webkit-autofill,
+  [data-theme="dark"] input:-webkit-autofill:focus,
+  [data-theme="dark"] input:-webkit-autofill:hover,
+  [data-theme="dark"] textarea:-webkit-autofill,
+  [data-theme="dark"] textarea:-webkit-autofill:focus,
+  [data-theme="dark"] textarea:-webkit-autofill:hover {
+    -webkit-text-fill-color: #e4e4e7;
+    caret-color: #e4e4e7;
+    box-shadow: 0 0 0 1000px #09090b inset;
   }
 
   .material-symbols-outlined {
@@ -90,9 +115,13 @@
     filter: blur(60px);
   }
   .glass-panel {
-    background: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.72);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
+  }
+  .dark .glass-panel {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
   }
   .glass-dark {
     background: rgba(25, 28, 29, 0.4);

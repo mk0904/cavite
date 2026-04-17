@@ -1,27 +1,278 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect, useMemo, useRef, useCallback, Suspense } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Resume, updateResume, listenToUserResumes } from "@/lib/db";
 import { StudioInput } from "@/components/ui/StudioInput";
 import { StudioCard } from "@/components/ui/StudioCard";
 import { generateLatex } from "@/lib/latex-generator";
-import { debounce } from "lodash";
 
 type SectionType = 'general' | 'socials' | 'experience' | 'education' | 'projects' | 'skills' | 'certificates' | 'leadership';
+
+/** US Letter at 96 CSS px per inch */
+const PREVIEW_PAPER_W = 816;
+const PREVIEW_PAPER_H = 1056;
+
+function entryIsVisible(isVisible: boolean | undefined) {
+  return isVisible !== false;
+}
+
+function ResumePrintPreview({ resume }: { resume: Resume }) {
+  const {
+    basics,
+    experience = [],
+    education = [],
+    projects = [],
+    skills = [],
+    certificates = [],
+    coCurricular = [],
+  } = resume.sections;
+
+  const contactBits = [
+    basics.email,
+    basics.phone,
+    basics.location,
+  ].filter(Boolean);
+
+  const visibleSocials =
+    basics.socials?.filter((s) => s.isVisible && s.url?.trim()) ?? [];
+
+  const exp = experience.filter((e) => entryIsVisible(e.isVisible));
+  const edu = education.filter((e) => entryIsVisible(e.isVisible));
+  const proj = projects.filter((e) => entryIsVisible(e.isVisible));
+  const sk = skills.filter((e) => entryIsVisible(e.isVisible));
+  const cert = certificates.filter((e) => entryIsVisible(e.isVisible));
+  const lead = coCurricular.filter((e) => entryIsVisible(e.isVisible));
+
+  const hasBody =
+    (basics.summary && basics.summary.trim().length > 0) ||
+    exp.length > 0 ||
+    edu.length > 0 ||
+    proj.length > 0 ||
+    sk.length > 0 ||
+    cert.length > 0 ||
+    lead.length > 0;
+
+  return (
+    <>
+      <header className="mb-8 border-b-2 border-zinc-800 pb-6 text-center">
+        <h1 className="text-[22px] font-bold uppercase leading-tight tracking-tight text-zinc-900">
+          {basics.name?.trim() || "your name"}
+        </h1>
+        {contactBits.length > 0 && (
+          <p className="mt-3 text-[11px] font-medium leading-relaxed text-zinc-700">
+            {contactBits.join(" · ")}
+          </p>
+        )}
+        {visibleSocials.length > 0 && (
+          <p className="mt-2 text-[10px] font-medium text-zinc-600">
+            {visibleSocials.map((s) => s.url).join(" · ")}
+          </p>
+        )}
+      </header>
+
+      {basics.summary?.trim() && (
+        <section className="mb-6 text-left">
+          <h2 className="mb-2 border-b border-zinc-800 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-900">
+            summary
+          </h2>
+          <p className="text-[11px] leading-relaxed text-zinc-800">{basics.summary.trim()}</p>
+        </section>
+      )}
+
+      {exp.length > 0 && (
+        <section className="mb-6 text-left">
+          <h2 className="mb-3 border-b border-zinc-800 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-900">
+            experience
+          </h2>
+          <ul className="space-y-4">
+            {exp.map((e) => (
+              <li key={e.id}>
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <span className="text-[12px] font-bold text-zinc-900">
+                    {e.role || "role"}
+                  </span>
+                  <span className="text-[10px] font-semibold text-zinc-600">
+                    {e.dates || "—"}
+                  </span>
+                </div>
+                <p className="text-[11px] font-semibold text-zinc-700">
+                  {e.company}
+                  {e.location ? ` · ${e.location}` : ""}
+                </p>
+                {e.bullets?.filter((b) => b.trim()).length ? (
+                  <ul className="mt-2 list-disc space-y-1 pl-4 text-[10px] leading-snug text-zinc-800">
+                    {e.bullets.filter((b) => b.trim()).map((b, i) => (
+                      <li key={i}>{b}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {edu.length > 0 && (
+        <section className="mb-6 text-left">
+          <h2 className="mb-3 border-b border-zinc-800 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-900">
+            education
+          </h2>
+          <ul className="space-y-3">
+            {edu.map((ed) => (
+              <li key={ed.id}>
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <span className="text-[12px] font-bold text-zinc-900">
+                    {ed.school || "institution"}
+                  </span>
+                  <span className="text-[10px] font-semibold text-zinc-600">{ed.dates}</span>
+                </div>
+                <p className="text-[11px] text-zinc-700">
+                  {ed.degree}
+                  {ed.gpa ? ` · GPA ${ed.gpa}` : ""}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {proj.length > 0 && (
+        <section className="mb-6 text-left">
+          <h2 className="mb-3 border-b border-zinc-800 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-900">
+            projects
+          </h2>
+          <ul className="space-y-4">
+            {proj.map((p) => (
+              <li key={p.id}>
+                <p className="text-[12px] font-bold text-zinc-900">{p.title || "project"}</p>
+                {p.description?.trim() && (
+                  <p className="mt-1 text-[10px] leading-relaxed text-zinc-800">{p.description}</p>
+                )}
+                {p.bullets?.filter((b) => b.trim()).length ? (
+                  <ul className="mt-2 list-disc space-y-1 pl-4 text-[10px] text-zinc-800">
+                    {p.bullets.filter((b) => b.trim()).map((b, i) => (
+                      <li key={i}>{b}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {sk.length > 0 && (
+        <section className="mb-6 text-left">
+          <h2 className="mb-3 border-b border-zinc-800 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-900">
+            skills
+          </h2>
+          <ul className="space-y-2">
+            {sk.map((s) => (
+              <li key={s.id} className="text-[10px] text-zinc-800">
+                <span className="font-bold text-zinc-900">{s.category}: </span>
+                {(s.items || []).filter(Boolean).join(", ") || "—"}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {cert.length > 0 && (
+        <section className="mb-6 text-left">
+          <h2 className="mb-3 border-b border-zinc-800 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-900">
+            certificates
+          </h2>
+          <ul className="space-y-2">
+            {cert.map((c) => (
+              <li key={c.id} className="text-[10px] text-zinc-800">
+                <span className="font-semibold text-zinc-900">{c.name}</span>
+                {c.issuer ? ` — ${c.issuer}` : ""}
+                {c.date ? ` · ${c.date}` : ""}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {lead.length > 0 && (
+        <section className="mb-6 text-left">
+          <h2 className="mb-3 border-b border-zinc-800 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-900">
+            leadership & activities
+          </h2>
+          <ul className="space-y-3">
+            {lead.map((l) => (
+              <li key={l.id}>
+                <p className="text-[11px] font-bold text-zinc-900">{l.role}</p>
+                <p className="text-[10px] text-zinc-700">
+                  {l.organization} · {l.dates}
+                </p>
+                {l.bullets?.filter((b) => b.trim()).length ? (
+                  <ul className="mt-1 list-disc pl-4 text-[10px] text-zinc-800">
+                    {l.bullets.filter((b) => b.trim()).map((b, i) => (
+                      <li key={i}>{b}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {!hasBody && (
+        <div className="rounded-lg border border-dashed border-zinc-400 bg-zinc-50/80 px-5 py-8 text-center">
+          <p className="text-[11px] font-semibold text-zinc-700">
+            Your resume preview will appear here as you fill in sections.
+          </p>
+          <p className="mt-2 text-[10px] leading-relaxed text-zinc-600">
+            Add a summary, experience, education, or other blocks in the studio — this page updates
+            live.
+          </p>
+        </div>
+      )}
+    </>
+  );
+}
 
 function EditorContent() {
   const params = useParams();
   const searchParams = useSearchParams();
-  const router = useRouter();
   const { user } = useAuth();
   
   const [resume, setResume] = useState<Resume | null>(null);
-  const [previewZoom, setPreviewZoom] = useState(0.8);
-  
+  /** 1 = auto-fit to panel; adjust with zoom controls */
+  const [previewZoom, setPreviewZoom] = useState(1);
+  const [fitScale, setFitScale] = useState(0.4);
+  const [saveUi, setSaveUi] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const previewSlotRef = useRef<HTMLDivElement>(null);
+  const pendingPatchRef = useRef<Partial<Resume>>({});
+  const flushTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveUiResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resumeRef = useRef<Resume | null>(null);
+
   // Consolidate Active Section from Global Sidebar (URL Param)
   const activeSection = (searchParams.get("section") as SectionType) || "general";
+
+  useEffect(() => {
+    const el = previewSlotRef.current;
+    if (!el) return;
+    const measure = () => {
+      const r = el.getBoundingClientRect();
+      const pad = 16;
+      const cw = r.width - pad;
+      const ch = r.height - pad;
+      if (cw < 48 || ch < 48) return;
+      const sw = cw / PREVIEW_PAPER_W;
+      const sh = ch / PREVIEW_PAPER_H;
+      setFitScale(Math.min(sw, sh));
+    };
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    measure();
+    return () => ro.disconnect();
+  }, [resume?.id]);
 
   useEffect(() => {
     if (!user || !params.id) return;
@@ -32,47 +283,243 @@ function EditorContent() {
     return () => unsub();
   }, [user, params.id]);
 
-  const handleUpdate = debounce((data: Partial<Resume>) => {
-    if (!user || !params.id) return;
-    updateResume(user.uid, params.id as string, data);
-  }, 1000);
+  useEffect(() => {
+    resumeRef.current = resume;
+  }, [resume]);
 
-  const handleSectionUpdate = (sectionKey: keyof Resume['sections'], data: any) => {
+  const queueResumePatch = useCallback(
+    (data: Partial<Resume>) => {
+      pendingPatchRef.current = { ...pendingPatchRef.current, ...data };
+      if (flushTimeoutRef.current) clearTimeout(flushTimeoutRef.current);
+      flushTimeoutRef.current = setTimeout(() => {
+        flushTimeoutRef.current = null;
+        if (!user || !params.id) return;
+        const patch = pendingPatchRef.current;
+        pendingPatchRef.current = {};
+        if (Object.keys(patch).length === 0) return;
+        void updateResume(user.uid, params.id as string, patch);
+      }, 1000);
+    },
+    [user, params.id]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (flushTimeoutRef.current) clearTimeout(flushTimeoutRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    pendingPatchRef.current = {};
+    if (flushTimeoutRef.current) {
+      clearTimeout(flushTimeoutRef.current);
+      flushTimeoutRef.current = null;
+    }
+  }, [params.id]);
+
+  const cancelDebouncedSave = useCallback(() => {
+    if (flushTimeoutRef.current) {
+      clearTimeout(flushTimeoutRef.current);
+      flushTimeoutRef.current = null;
+    }
+    pendingPatchRef.current = {};
+  }, []);
+
+  const saveResumeNow = useCallback(async () => {
+    const r = resumeRef.current;
+    if (!user || !params.id || !r) return;
+    cancelDebouncedSave();
+    if (saveUiResetRef.current) clearTimeout(saveUiResetRef.current);
+    setSaveUi("saving");
+    try {
+      await updateResume(user.uid, params.id as string, {
+        title: r.title,
+        sections: r.sections,
+      });
+      setSaveUi("saved");
+      saveUiResetRef.current = setTimeout(() => setSaveUi("idle"), 2200);
+    } catch (e) {
+      console.error(e);
+      setSaveUi("error");
+      saveUiResetRef.current = setTimeout(() => setSaveUi("idle"), 4000);
+    }
+  }, [user, params.id, cancelDebouncedSave]);
+
+  useEffect(() => {
+    return () => {
+      if (saveUiResetRef.current) clearTimeout(saveUiResetRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+        e.preventDefault();
+        void saveResumeNow();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [saveResumeNow]);
+
+  const handleSectionUpdate = <K extends keyof Resume["sections"]>(
+    sectionKey: K,
+    data: Resume["sections"][K]
+  ) => {
     if (!resume) return;
-    const newResume = { ...resume, sections: { ...resume.sections, [sectionKey]: data } };
+    const newResume = {
+      ...resume,
+      sections: { ...resume.sections, [sectionKey]: data },
+    };
     setResume(newResume);
-    handleUpdate({ sections: newResume.sections });
+    queueResumePatch({ sections: newResume.sections });
   };
 
   if (!resume) return (
-     <div className="flex-1 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-brand-teal/20 border-t-brand-teal rounded-full animate-spin"></div>
+     <div className="flex flex-1 items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-teal/20 border-t-brand-teal"></div>
      </div>
   );
 
+  const displayScale = Math.max(0.15, Math.min(fitScale * previewZoom, 2.5));
+
   return (
-    <div className="flex-1 flex h-full overflow-hidden bg-surface-container-lowest/30">
+    <div className="flex h-[calc(100dvh-5rem)] min-h-[360px] max-h-[calc(100dvh-5rem)] w-full overflow-hidden bg-surface-container-lowest/30 dark:bg-transparent">
       
       {/* 2. Structured Form Workspace (Center Pillar) */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide py-12 px-8 xl:px-20 border-r border-outline-variant/5">
+      <div className="min-h-0 flex-1 overflow-y-auto border-r border-outline-variant/5 px-8 py-12 scrollbar-hide dark:border-white/[0.06] xl:px-20">
         <div className="max-w-3xl mx-auto">
-          
+          <div className="mb-10 rounded-2xl border border-outline-variant/20 bg-white/50 p-5 dark:border-zinc-600/40 dark:bg-zinc-900/45">
+            <StudioInput
+              label="document title"
+              value={resume.title}
+              onChange={(v) => {
+                setResume({ ...resume, title: v });
+                queueResumePatch({ title: v });
+              }}
+              placeholder="e.g. frontend sde · research · internship"
+            />
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+              <p className="min-w-0 flex-1 text-[9px] font-bold uppercase tracking-widest text-on-surface-variant dark:text-zinc-500">
+                studio name only — not printed on your resume pdf. autosave ~1s ·{" "}
+                <kbd className="rounded border border-outline-variant/40 bg-on-surface/[0.04] px-1.5 py-0.5 font-mono text-[8px] text-on-surface-variant dark:border-zinc-600 dark:bg-zinc-800/80 dark:text-zinc-400">
+                  cmd s
+                </kbd>{" "}
+                /{" "}
+                <kbd className="rounded border border-outline-variant/40 bg-on-surface/[0.04] px-1.5 py-0.5 font-mono text-[8px] text-on-surface-variant dark:border-zinc-600 dark:bg-zinc-800/80 dark:text-zinc-400">
+                  ctrl s
+                </kbd>{" "}
+                saves now.
+              </p>
+              <div className="flex shrink-0 flex-nowrap items-center justify-end gap-2 sm:max-w-none">
+                {saveUi === "saved" ? (
+                  <span className="whitespace-nowrap text-[10px] font-bold lowercase tracking-wide text-brand-teal dark:text-[#7ee8ec]">
+                    saved to cloud.
+                  </span>
+                ) : null}
+                {saveUi === "error" ? (
+                  <span className="max-w-[10rem] text-[10px] font-bold lowercase tracking-wide text-red-600 sm:max-w-none dark:text-red-400">
+                    save failed — try again.
+                  </span>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => void saveResumeNow()}
+                  disabled={saveUi === "saving"}
+                  className="flex h-10 shrink-0 flex-nowrap items-center justify-center gap-2 whitespace-nowrap rounded-full bg-brand-teal px-5 text-[10px] font-bold uppercase tracking-wide text-white transition-[filter,opacity] hover:brightness-110 active:brightness-95 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-brand-teal dark:text-white dark:hover:brightness-110"
+                >
+                  <span
+                    className={`material-symbols-outlined shrink-0 text-[18px] font-light leading-none ${saveUi === "saving" ? "animate-spin" : ""}`}
+                  >
+                    {saveUi === "saving" ? "progress_activity" : "save"}
+                  </span>
+                  <span className="leading-none">
+                    {saveUi === "saving" ? "saving…" : "save now"}
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Section Header */}
-          <div className="mb-12 flex justify-between items-end">
+          <div className="mb-12 flex items-end justify-between">
              <div>
-                <span className="text-[10px] font-bold text-brand-teal lowercase tracking-[0.3em] block mb-2 opacity-60">Architecture Phase</span>
-                <h3 className="text-3xl font-bold font-headline text-on-surface tracking-tighter lowercase">{activeSection}.</h3>
+                <span className="mb-2 block text-[10px] font-bold lowercase tracking-[0.3em] text-brand-teal opacity-80 dark:text-[#7ee8ec] dark:opacity-100">
+                  architecture phase
+                </span>
+                <h3 className="font-headline text-3xl font-bold lowercase tracking-tighter text-on-surface dark:text-white">
+                  {activeSection}.
+                </h3>
              </div>
              {(activeSection !== 'general' && activeSection !== 'socials' && activeSection !== 'skills') && (
                <button 
                  onClick={() => {
-                   const key = activeSection === 'leadership' ? 'coCurricular' : activeSection;
-                   const currentSection = resume.sections[key as keyof Resume['sections']] || [];
-                   const list = [...(currentSection as any[])];
-                   list.unshift({ id: Math.random().toString(36).substr(2, 9), isVisible: true, ...(activeSection === 'experience' ? {company: '', role: '', dates: '', bullets: []} : {}) });
-                   handleSectionUpdate(key as keyof Resume['sections'], list);
+                   const key =
+                     activeSection === "leadership"
+                       ? "coCurricular"
+                       : activeSection;
+                   const newId = Math.random().toString(36).slice(2, 11);
+                   if (key === "experience") {
+                     handleSectionUpdate("experience", [
+                       {
+                         id: newId,
+                         company: "",
+                         role: "",
+                         dates: "",
+                         bullets: [],
+                         isVisible: true,
+                       },
+                       ...resume.sections.experience,
+                     ]);
+                   } else if (key === "education") {
+                     handleSectionUpdate("education", [
+                       {
+                         id: newId,
+                         school: "",
+                         degree: "",
+                         dates: "",
+                         gpa: "",
+                         isVisible: true,
+                       },
+                       ...resume.sections.education,
+                     ]);
+                   } else if (key === "projects") {
+                     handleSectionUpdate("projects", [
+                       {
+                         id: newId,
+                         title: "",
+                         description: "",
+                         bullets: [],
+                         isVisible: true,
+                       },
+                       ...resume.sections.projects,
+                     ]);
+                   } else if (key === "certificates") {
+                     handleSectionUpdate("certificates", [
+                       {
+                         id: newId,
+                         name: "",
+                         issuer: "",
+                         date: "",
+                         isVisible: true,
+                       },
+                       ...resume.sections.certificates,
+                     ]);
+                   } else if (key === "coCurricular") {
+                     handleSectionUpdate("coCurricular", [
+                       {
+                         id: newId,
+                         role: "",
+                         organization: "",
+                         dates: "",
+                         bullets: [],
+                         isVisible: true,
+                       },
+                       ...resume.sections.coCurricular,
+                     ]);
+                   }
                  }}
-                 className="flex items-center gap-2 px-5 py-2.5 bg-on-surface text-white rounded-2xl font-bold text-[10px] lowercase tracking-widest hover:bg-brand-teal transition-all shadow-sm"
+                 className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-brand-teal to-[#009097] px-5 py-2.5 text-[10px] font-bold lowercase tracking-widest text-white shadow-[0_8px_24px_rgba(0,123,128,0.35)] transition-all hover:shadow-[0_10px_32px_rgba(0,123,128,0.5)] hover:brightness-[1.05] active:scale-[0.98] dark:from-brand-teal dark:to-cyan-600 dark:shadow-[0_0_26px_rgba(0,123,128,0.45)] dark:hover:shadow-[0_0_34px_rgba(0,123,128,0.55)]"
                >
                  <span className="material-symbols-outlined text-sm">add</span> initiate entry.
                </button>
@@ -83,7 +530,7 @@ function EditorContent() {
             
             {/* General Section */}
             {activeSection === 'general' && (
-              <div className="bg-white border border-outline-variant/5 rounded-[2.5rem] p-10 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <div className="animate-in fade-in slide-in-from-bottom-4 rounded-[2.5rem] border border-outline-variant/15 bg-white/90 p-10 shadow-sm backdrop-blur-md duration-700 dark:border-zinc-600/45 dark:bg-zinc-900/55 dark:shadow-[0_8px_40px_rgba(0,0,0,0.45)]">
                 <div className="space-y-8">
                   <StudioInput label="full name" value={resume.sections.basics.name} onChange={(v) => handleSectionUpdate('basics', { ...resume.sections.basics, name: v })} />
                   <StudioInput label="sync email" value={resume.sections.basics.email} onChange={(v) => handleSectionUpdate('basics', { ...resume.sections.basics, email: v })} />
@@ -100,9 +547,9 @@ function EditorContent() {
 
             {/* Socials Section (Architectural Registry) */}
             {activeSection === 'socials' && (
-              <div className="bg-white border border-outline-variant/5 rounded-[2.5rem] p-10 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <div className="mb-8 p-4 bg-brand-teal/5 border border-brand-teal/10 rounded-2xl">
-                   <p className="text-[10px] font-bold text-brand-teal lowercase tracking-wider flex items-center gap-2">
+              <div className="animate-in fade-in slide-in-from-bottom-4 rounded-[2.5rem] border border-outline-variant/15 bg-white/90 p-10 shadow-sm backdrop-blur-md duration-700 dark:border-zinc-600/45 dark:bg-zinc-900/55 dark:shadow-[0_8px_40px_rgba(0,0,0,0.45)]">
+                <div className="mb-8 rounded-2xl border border-brand-teal/10 bg-brand-teal/5 p-4 dark:border-brand-teal/30 dark:bg-brand-teal/15">
+                   <p className="flex items-center gap-2 text-[10px] font-bold lowercase tracking-wider text-brand-teal dark:text-[#9ef0f3]">
                       <span className="material-symbols-outlined text-sm">info</span>
                       tick the checkbox to show the link on your active resume blueprint.
                    </p>
@@ -140,17 +587,19 @@ function EditorContent() {
                            />
                         </div>
                         
-                        <div className="flex-1 flex items-center gap-2 bg-surface-container-lowest border border-outline-variant/10 rounded-2xl px-4 py-2 transition-all hover:border-brand-teal/20">
-                           <div className="w-10 h-10 bg-on-surface/5 rounded-xl flex items-center justify-center text-on-surface-variant group-hover/row:text-brand-teal transition-all">
+                        <div className="flex flex-1 items-center gap-2 rounded-2xl border border-outline-variant/15 bg-surface-container-lowest px-4 py-2 transition-all hover:border-brand-teal/25 dark:border-zinc-500/40 dark:bg-zinc-900/70">
+                           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-on-surface/5 text-zinc-600 transition-all group-hover/row:text-brand-teal dark:bg-zinc-800/80 dark:text-zinc-300 dark:group-hover/row:text-[#7ee8ec]">
                               <span className="material-symbols-outlined text-xl">{platform.icon}</span>
                            </div>
-                           <span className="text-[10px] font-bold text-on-surface-variant/40 tracking-widest lowercase px-2 select-none">https://</span>
+                           <span className="select-none px-2 text-[10px] font-bold lowercase tracking-widest text-zinc-500 dark:text-zinc-500">
+                             https://
+                           </span>
                            <input 
                               type="text"
                               value={url}
                               onChange={(e) => updateSocial(e.target.value, isVisible)}
                               placeholder={`add ${platform.label} profile link...`}
-                              className="flex-1 bg-transparent border-none outline-none text-[12px] font-bold text-on-surface placeholder:text-on-surface-variant/20 tracking-tight py-2"
+                              className="flex-1 border-none bg-transparent py-2 text-[12px] font-bold tracking-tight text-zinc-900 outline-none placeholder:text-zinc-500 dark:text-zinc-100 dark:placeholder:text-zinc-400"
                            />
                         </div>
                       </div>
@@ -195,27 +644,37 @@ function EditorContent() {
                         }} />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-8">
-                        <StudioInput label="temporal index (e.g. feb 24 - current)" value={exp.dates} onChange={(v) => {
-                          const l = [...resume.sections.experience]; l[idx].dates = v; handleSectionUpdate('experience', l);
-                        }} />
-                        <div className="flex items-center gap-3 pt-6">
-                          <input 
-                            type="checkbox" 
-                            checked={exp.isCurrent || false}
-                            onChange={(e) => {
-                              const l = [...resume.sections.experience]; l[idx].isCurrent = e.target.checked; handleSectionUpdate('experience', l);
-                            }}
-                            className="w-4 h-4 rounded-lg border-outline-variant/20 text-brand-teal focus:ring-brand-teal/20"
-                          />
-                          <span className="text-[10px] font-bold lowercase tracking-widest text-on-surface-variant/40">active deployment</span>
-                        </div>
-                      </div>
+                      <StudioInput
+                        label="temporal index (e.g. feb 24 – current)"
+                        value={exp.dates}
+                        onChange={(v) => {
+                          const l = [...resume.sections.experience];
+                          l[idx].dates = v;
+                          handleSectionUpdate("experience", l);
+                        }}
+                      />
+                      <label className="flex cursor-pointer items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={exp.isCurrent || false}
+                          onChange={(e) => {
+                            const l = [...resume.sections.experience];
+                            l[idx].isCurrent = e.target.checked;
+                            handleSectionUpdate("experience", l);
+                          }}
+                          className="h-4 w-4 rounded border-zinc-400 text-brand-teal focus:ring-brand-teal/30 dark:border-zinc-500 dark:bg-zinc-900"
+                        />
+                        <span className="text-[10px] font-bold lowercase tracking-widest text-zinc-700 dark:text-zinc-300">
+                          active deployment
+                        </span>
+                      </label>
 
                       <div className="space-y-2">
-                        <label className="text-[9px] font-bold lowercase tracking-widest text-brand-teal/40 ml-1">architectural impact (bullets)</label>
+                        <label className="ml-1 text-[9px] font-bold lowercase tracking-widest text-brand-teal dark:text-[#7ee8ec]">
+                          architectural impact (bullets)
+                        </label>
                         <textarea 
-                          className="w-full bg-surface-container-lowest border border-outline-variant/10 rounded-2xl p-6 text-[12px] font-medium leading-relaxed resize-none focus:ring-2 focus:ring-brand-teal/10 outline-none transition-all"
+                          className="w-full resize-none rounded-2xl border border-outline-variant/15 bg-surface-container-lowest p-6 text-[12px] font-medium leading-relaxed text-zinc-900 outline-none transition-all placeholder:text-zinc-500 focus:ring-2 focus:ring-brand-teal/15 dark:border-zinc-500/40 dark:bg-zinc-900/80 dark:text-zinc-100 dark:placeholder:text-zinc-400 dark:focus:ring-brand-teal/25"
                           rows={6}
                           value={(exp.bullets || []).join("\n")}
                           placeholder="• quantified impact metrics...&#10;• technical stack utilized..."
@@ -290,7 +749,7 @@ function EditorContent() {
                 ))}
                 <button 
                   onClick={() => handleSectionUpdate('skills', [...resume.sections.skills, { id: Math.random().toString(), category: '', items: [], isVisible: true }])} 
-                  className="w-full py-6 border-2 border-dashed border-outline-variant/10 rounded-3xl text-[10px] font-bold lowercase tracking-widest text-on-surface-variant/30 hover:border-brand-teal/40 hover:text-brand-teal transition-all"
+                  className="w-full rounded-3xl border-2 border-dashed border-outline-variant/25 py-6 text-[11px] font-bold lowercase tracking-widest text-zinc-600 transition-all hover:border-brand-teal/50 hover:text-brand-teal dark:border-zinc-500 dark:text-zinc-300 dark:hover:border-brand-teal/60 dark:hover:text-[#7ee8ec]"
                 >
                   + expand skill index.
                 </button>
@@ -299,75 +758,96 @@ function EditorContent() {
 
             {/* Placeholder for remaining sections */}
             {(activeSection === 'projects' || activeSection === 'certificates' || activeSection === 'leadership') && (
-               <div className="py-20 text-center bg-white border border-outline-variant/5 rounded-3xl opacity-40">
-                  <span className="material-symbols-outlined text-4xl mb-4 font-light animate-pulse">architecture</span>
-                  <p className="text-[10px] font-bold lowercase tracking-[0.2em]">module synchronization in progress.</p>
+               <div className="rounded-3xl border border-outline-variant/15 bg-white/85 py-20 text-center backdrop-blur-sm dark:border-zinc-600/50 dark:bg-zinc-900/50">
+                  <span className="material-symbols-outlined mb-4 animate-pulse text-4xl font-light text-brand-teal/50 dark:text-[#5ecfd4]/80">
+                    architecture
+                  </span>
+                  <p className="text-[10px] font-bold lowercase tracking-[0.2em] text-on-surface-variant dark:text-zinc-400">
+                    module synchronization in progress.
+                  </p>
                </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* 3. Immersive Preview Hub (Right Pillar) */}
-      <aside className="w-[450px] 2xl:w-[550px] bg-surface-container-low/50 backdrop-blur-3xl flex flex-col items-center py-12 overflow-y-auto scrollbar-hide z-10 shrink-0">
-        <div 
-           id="resume-preview"
-           className="bg-white shadow-3xl p-12 transition-all duration-700 origin-top hover:scale-[1.02]"
-           style={{ width: '8.5in', minHeight: '11in', transform: `scale(${previewZoom})`, marginBottom: `calc(-11in * (1 - ${previewZoom}))` }}
-        >
-           {/* High-Fidelity Preview Content (Standard Layout) */}
-           <div className="text-center mb-10">
-              <h1 className="text-3xl font-bold text-gray-900 uppercase tracking-tighter mb-2">{resume.sections.basics.name || "structural architect"}</h1>
-              <div className="flex justify-center gap-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                 <span>{resume.sections.basics.email || "email@index.io"}</span>
-                 {resume.sections.basics.phone && <span>• {resume.sections.basics.phone}</span>}
-              </div>
-           </div>
-
-           {/* Generic Preview Placeholder (to keep it clean) */}
-           <div className="mt-12 space-y-10">
-              <div className="space-y-4">
-                 <div className="h-0.5 bg-gray-100 w-full"></div>
-                 <div className="flex justify-between">
-                    <div className="h-4 bg-gray-50 rounded-full w-1/4"></div>
-                    <div className="h-4 bg-gray-50 rounded-full w-1/6"></div>
-                 </div>
-                 <div className="space-y-2">
-                    <div className="h-3 bg-gray-50/50 rounded-full w-full"></div>
-                    <div className="h-3 bg-gray-50/50 rounded-full w-5/6"></div>
-                 </div>
-              </div>
-              <div className="space-y-4">
-                 <div className="h-0.5 bg-gray-100 w-full"></div>
-                 <div className="flex justify-between">
-                    <div className="h-4 bg-gray-50 rounded-full w-1/3"></div>
-                    <div className="h-4 bg-gray-50 rounded-full w-1/5"></div>
-                 </div>
-                 <div className="space-y-2">
-                    <div className="h-3 bg-gray-50/50 rounded-full w-full"></div>
-                    <div className="h-3 bg-gray-50/50 rounded-full w-4/5"></div>
-                 </div>
-              </div>
-           </div>
+      {/* 3. Preview column: non-scrollable fitted page; controls sit below */}
+      <aside className="z-10 flex h-full min-h-0 w-[450px] shrink-0 flex-col overflow-hidden border-l border-outline-variant/10 bg-slate-200/60 backdrop-blur-xl dark:border-white/[0.08] dark:bg-gradient-to-b dark:from-[#080b0d] dark:via-[#0d1114] dark:to-[#12181c] 2xl:w-[550px]">
+        <div className="shrink-0 px-4 pb-2 pt-4">
+          <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-zinc-600 dark:text-zinc-400">
+            print preview
+          </p>
+          <p className="mt-1 text-[8px] font-medium text-zinc-500 dark:text-zinc-500">
+            full page fits the panel at 100%. preview does not scroll.
+          </p>
         </div>
 
-        {/* Floating Global Utility Bar */}
-        <div className="fixed bottom-10 right-10 flex items-center gap-3 bg-on-surface/90 backdrop-blur-4xl px-6 py-4 rounded-[2rem] border border-white/10 shadow-3xl z-50 animate-in fade-in slide-in-from-right-8 duration-700">
-           <button 
-             onClick={() => {
-               const latex = generateLatex(resume);
-               navigator.clipboard.writeText(latex);
-             }}
-             className="flex items-center gap-3 px-6 py-2.5 bg-brand-teal text-white rounded-2xl font-bold text-[10px] lowercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-brand-teal/20"
-           >
-             <span className="material-symbols-outlined text-base">code</span>
-             capture latex.
-           </button>
-           <div className="flex items-center gap-3 ml-2 pl-4 border-l border-white/10">
-              <button onClick={() => setPreviewZoom(z => Math.max(0.4, z - 0.05))} className="text-white/30 hover:text-white transition-colors"><span className="material-symbols-outlined text-lg">zoom_out</span></button>
-              <span className="text-[9px] font-bold text-brand-teal w-10 text-center">{Math.round(previewZoom * 100)}%</span>
-              <button onClick={() => setPreviewZoom(z => Math.min(1.2, z + 0.05))} className="text-white/30 hover:text-white transition-colors"><span className="material-symbols-outlined text-lg">zoom_in</span></button>
-           </div>
+        <div
+          ref={previewSlotRef}
+          className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden px-3 pb-2"
+        >
+          <div
+            className="relative shrink-0 rounded-lg bg-zinc-300/50 p-1 shadow-inner dark:bg-black/40 dark:ring-1 dark:ring-white/10"
+            style={{
+              width: PREVIEW_PAPER_W * displayScale,
+              height: PREVIEW_PAPER_H * displayScale,
+            }}
+          >
+            <div
+              id="resume-preview"
+              className="absolute left-0 top-0 overflow-hidden bg-white p-8 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.35)] ring-1 ring-zinc-900/10 dark:shadow-[0_24px_60px_-8px_rgba(0,0,0,0.65)] dark:ring-white/20"
+              style={{
+                width: PREVIEW_PAPER_W,
+                height: PREVIEW_PAPER_H,
+                transform: `scale(${displayScale})`,
+                transformOrigin: "top left",
+              }}
+            >
+              <ResumePrintPreview resume={resume} />
+            </div>
+          </div>
+        </div>
+
+        <div className="shrink-0 space-y-3 border-t border-zinc-300/80 bg-white/80 px-4 py-4 dark:border-white/10 dark:bg-black/40">
+          <div className="flex items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => setPreviewZoom((z) => Math.max(0.5, Math.round((z - 0.08) * 100) / 100))}
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 transition-colors hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+              aria-label="zoom out"
+            >
+              <span className="material-symbols-outlined text-xl">zoom_out</span>
+            </button>
+            <span className="min-w-[3.5rem] text-center text-[10px] font-bold tabular-nums text-brand-teal dark:text-[#7ee8ec]">
+              {Math.round(previewZoom * 100)}%
+            </span>
+            <button
+              type="button"
+              onClick={() => setPreviewZoom((z) => Math.min(1.6, Math.round((z + 0.08) * 100) / 100))}
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 transition-colors hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+              aria-label="zoom in"
+            >
+              <span className="material-symbols-outlined text-xl">zoom_in</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPreviewZoom(1)}
+              className="rounded-xl border border-zinc-200 px-3 py-2 text-[9px] font-bold uppercase tracking-wider text-zinc-600 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            >
+              reset
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              const latex = generateLatex(resume);
+              navigator.clipboard.writeText(latex);
+            }}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-teal py-3 text-[10px] font-bold lowercase tracking-widest text-white shadow-lg shadow-brand-teal/25 transition-all hover:opacity-95 active:scale-[0.99]"
+          >
+            <span className="material-symbols-outlined text-base">code</span>
+            capture latex
+          </button>
         </div>
       </aside>
     </div>

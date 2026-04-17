@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Outfit, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 
