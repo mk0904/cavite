@@ -53,15 +53,42 @@
   --font-headline: var(--font-outfit);
   --font-body: var(--font-outfit);
   --font-label: var(--font-outfit);
+  --font-serif: var(--font-serif);
 }
 
 @layer base {
+  :root {
+    --brand-glow: radial-gradient(circle at center, rgba(0, 123, 128, 0.15) 0%, transparent 70%);
+  }
+  
+  .dark, [data-theme="dark"] {
+    --color-background: #050708 !important;
+    --color-surface: #050708 !important;
+    --color-on-surface: #ffffff !important;
+    --color-on-background: #ffffff !important;
+    --color-surface-container-low: #0f1112 !important;
+    --color-outline-variant: rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  /* ensure the class itself applies the background if used on a wrapper */
+  .dark {
+    background-color: var(--color-background);
+    color: var(--color-on-surface);
+  }
+
   .material-symbols-outlined {
     font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
   }
 }
 
 @layer utilities {
+  .font-serif {
+    font-family: var(--font-serif), serif;
+  }
+  .teal-glow {
+    background: radial-gradient(circle at center, rgba(0, 123, 128, 0.3) 0%, transparent 70%);
+    filter: blur(60px);
+  }
   .glass-panel {
     background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(24px);
