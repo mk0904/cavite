@@ -50,14 +50,21 @@ export interface Resume {
       phone: string;
       location: string;
       summary: string;
-      socials?: { platform: string; url: string }[];
+      nationality?: string;
+      gender?: string;
+      dob?: string;
+      socials?: { platform: string; url: string; isVisible?: boolean }[];
     };
     experience: {
       id: string;
       company: string;
       role: string;
       dates: string;
+      location?: string;
+      domain?: string;
+      isCurrent?: boolean;
       bullets: string[];
+      isVisible?: boolean;
     }[];
     projects: {
       id: string;
@@ -65,6 +72,7 @@ export interface Resume {
       link?: string;
       description: string;
       bullets: string[];
+      isVisible?: boolean;
     }[];
     education: {
       id: string;
@@ -72,11 +80,13 @@ export interface Resume {
       degree: string;
       dates: string;
       gpa: string;
+      isVisible?: boolean;
     }[];
     skills: {
       id: string;
       category: string;
       items: string[];
+      isVisible?: boolean;
     }[];
     certificates: {
       id: string;
@@ -84,6 +94,7 @@ export interface Resume {
       issuer: string;
       date: string;
       link?: string;
+      isVisible?: boolean;
     }[];
     coCurricular: {
       id: string;
@@ -91,6 +102,7 @@ export interface Resume {
       organization: string;
       dates: string;
       bullets: string[];
+      isVisible?: boolean;
     }[];
   };
   createdAt: any;
@@ -135,12 +147,12 @@ export const createResume = async (userId: string, title: string, initialSection
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()
   };
-  return await addDoc(collection(db, "resumes"), initialData);
+  return await addDoc(collection(db, "users", userId, "resumes"), initialData);
 };
 
 
-export const updateResume = async (resumeId: string, data: Partial<Resume>) => {
-  const docRef = doc(db, "resumes", resumeId);
+export const updateResume = async (userId: string, resumeId: string, data: Partial<Resume>) => {
+  const docRef = doc(db, "users", userId, "resumes", resumeId);
   return await updateDoc(docRef, {
     ...data,
     updatedAt: serverTimestamp()
@@ -148,7 +160,7 @@ export const updateResume = async (resumeId: string, data: Partial<Resume>) => {
 };
 
 export const listenToUserResumes = (userId: string, callback: (resumes: Resume[]) => void) => {
-  const q = query(collection(db, "resumes"), where("userId", "==", userId), orderBy("updatedAt", "desc"));
+  const q = query(collection(db, "users", userId, "resumes"), orderBy("updatedAt", "desc"));
   return onSnapshot(q, (snapshot) => {
     const resumes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Resume));
     callback(resumes);
