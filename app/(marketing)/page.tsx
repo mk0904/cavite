@@ -2,12 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
 
 export default function Home() {
-  const { user, profile } = useAuth();
-  const isAuthenticated = !!(user && profile);
   const [scrolled, setScrolled] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
@@ -53,21 +50,11 @@ export default function Home() {
               </span>
             </button>
 
-            {!isAuthenticated ? (
               <Link href="/sign-up">
                 <button className="px-5 py-2 text-xs font-bold bg-brand-teal text-white rounded-full hover:brightness-110 transition-all active:scale-95">
                   book a call
                 </button>
               </Link>
-            ) : (
-              <Link href="/dashboard">
-                <button className={`px-5 py-2 text-xs font-bold ${
-                  theme === 'dark' ? 'bg-white text-black' : 'bg-on-surface text-white'
-                } rounded-full hover:opacity-90 transition-all active:scale-95`}>
-                  dashboard
-                </button>
-              </Link>
-            )}
           </div>
         </nav>
       </header>
