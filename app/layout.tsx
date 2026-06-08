@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Space_Grotesk } from "next/font/google";
+import { ThemeProvider } from "./theme-provider";
 import "./globals.css";
 
 const geist = Geist({
@@ -15,7 +16,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Cavite Campus | Transparent Placement Management",
+  title: "cavite.",
   description:
     "Cavite Campus helps college placement teams manage opportunities, custom hiring phases, shortlists, feedback, and 14-day student outcomes in one platform.",
   keywords: [
@@ -26,11 +27,26 @@ export const metadata: Metadata = {
     "Cavite Campus",
   ],
   openGraph: {
-    title: "Cavite Campus",
+    title: "cavite.",
     description:
       "A placement operating system for colleges built around live application status, editable hiring phases, and a 14-day outcome promise.",
     type: "website",
     url: "https://cavite.in",
+    images: [
+      {
+        url: "https://cavite.in/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Cavite Campus - no ghosting. clear outcomes.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "cavite.",
+    description:
+      "A placement operating system for colleges built around live application status, editable hiring phases, and a 14-day outcome promise.",
+    images: ["https://cavite.in/logo.png"],
   },
 };
 
@@ -40,9 +56,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme="light" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var t=localStorage.getItem('cavite-theme');if(t==='dark'||t==='light'){document.documentElement.dataset.theme=t;}}catch(e){}",
+          }}
+        />
+      </head>
       <body className={`${geist.variable} ${spaceGrotesk.variable}`}>
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );
